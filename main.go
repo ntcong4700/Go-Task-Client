@@ -2,37 +2,41 @@ package main
 
 import (
 	"fmt"
-	"time"
+	"os"
 )
 
-func main() {
-	filename := "tasks.json"
+const taskFile = "tasks.json"
 
-	// 1) Load task hiện có từ file.
-	tasks, err := LoadTasks(filename)
+func main() {
+	if len(os.Args) < 2 {
+		PrintUsage()
+		os.Exit(1)
+	}
+
+	command := os.Args[1]
+
+	tasks, err := LoadTasks(taskFile)
 	if err != nil {
 		fmt.Println("error loading tasks:", err)
-		return
+		os.Exit(1)
 	}
 
-	fmt.Println("loaded tasks:", len(tasks))
-
-	// 2) Tạo một task mẫu và append vào slice.
-	task := Task{
-		ID:          1,
-		Description: "Learn storage layer",
-		Status:      StatusTodo,
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
+	switch command {
+	case "add":
+		handleAdd(tasks, os.Args)
+	case "update":
+		handleUpdate(tasks, os.Args)
+	case "delete":
+		handleDelete(tasks, os.Args)
+	case "mark-in-progress":
+		handleMarkInProgress(tasks, os.Args)
+	case "mark-done":
+		handleMarkDone(tasks, os.Args)
+	case "list":
+		handleList(tasks, os.Args)
+	default:
+		fmt.Println("unknown command:", command)
+		PrintUsage()
+		os.Exit(1)
 	}
-
-	tasks = append(tasks, task)
-
-	// 3) Save lại xuống file.
-	if err := SaveTasks(filename, tasks); err != nil {
-		fmt.Println("error saving tasks:", err)
-		return
-	}
-
-	fmt.Println("task saved successfully")
 }
